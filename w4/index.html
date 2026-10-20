@@ -199,7 +199,36 @@
   </header>
 
   <!-- ==================== 主內容區 ==================== -->
-  <main class="flex-grow max-w-6xl w-full mx-auto p-4 md:p-6 relative z-10">
+  <main class="flex-grow max-w-6xl w-full mx-auto p-4 md:p-6 relative z-10 space-y-8">
+
+    <!-- Khu vực nhúng Google Form để gửi lời chúc / 許願表單區 -->
+    <section class="bg-white/90 rounded-2xl p-4 md:p-6 border border-vintage-border shadow-sm relative overflow-hidden">
+      <div class="vintage-corner v-tl"></div>
+      <div class="vintage-corner v-tr"></div>
+      <div class="vintage-corner v-bl"></div>
+      <div class="vintage-corner v-br"></div>
+      
+      <div class="flex items-center justify-between mb-4 border-b border-vintage-border/60 pb-3">
+        <h2 class="font-serif font-bold text-lg text-vintage-text flex items-center gap-2">
+          <i class="fa-solid fa-pen-nib text-vintage-accent"></i> 投遞您的許願金幣 (寫下留言)
+        </h2>
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSdSXP6DfZGxYmGaN1GKHBJbAaVV_RVXLj-f77FnVcHMfJxgWQ/viewform" target="_blank" class="text-xs font-mono text-vintage-accent hover:underline flex items-center gap-1">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i> 在新分頁開啟表單
+        </a>
+      </div>
+
+      <div class="w-full overflow-hidden rounded-xl border border-vintage-border/50 bg-white">
+        <iframe 
+          src="https://docs.google.com/forms/d/e/1FAIpQLSdSXP6DfZGxYmGaN1GKHBJbAaVV_RVXLj-f77FnVcHMfJxgWQ/viewform?embedded=true" 
+          width="100%" 
+          height="650" 
+          frameborder="0" 
+          marginheight="0" 
+          marginwidth="0"
+          class="w-full"
+        >正在載入表單...</iframe>
+      </div>
+    </section>
 
     <!-- 載入中動畫 -->
     <div id="loading" class="flex flex-col items-center justify-center py-20 text-vintage-muted">
