@@ -50,6 +50,7 @@
       background-color: #fbf8f3;
       color: #2c2825;
       min-height: 100vh;
+      overflow-x: hidden;
     }
 
     /* 復古羊皮紙微細網格 background */
@@ -80,23 +81,69 @@
         0px 4px 10px rgba(0,0,0,0.4);
     }
 
-    /* 復古紙張面板 */
+    /* 復古紙張面板與浮動動畫 */
+    @keyframes gentleFloat {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-4px); }
+    }
+
     .vintage-card {
       background: rgba(255, 255, 255, 0.88);
       backdrop-filter: blur(10px);
       border: 1px solid #e2d7c5;
       box-shadow: 0 10px 25px -5px rgba(180, 160, 140, 0.2), 0 4px 10px rgba(0, 0, 0, 0.03);
+      animation: gentleFloat 7s ease-in-out infinite;
     }
 
-    /* 按鈕樣式 */
+    /* Vệt sáng lướt qua khi di chuột (Shine Sweep) */
+    .shine-effect {
+      position: relative;
+      overflow: hidden;
+    }
+    .shine-effect::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(212, 163, 89, 0.25), transparent);
+      transition: 0.6s ease;
+    }
+    .shine-effect:hover::before {
+      left: 100%;
+    }
+
+    /* Nút bấm hiệu ứng */
     .btn-vintage {
       background: linear-gradient(135deg, #c07a50 0%, #d4a359 100%);
       color: #ffffff;
       transition: all 0.3s ease;
     }
     .btn-vintage:hover {
-      transform: translateY(-2px);
+      transform: translateY(-2px) scale(1.01);
       box-shadow: 0 8px 20px rgba(192, 122, 80, 0.35);
+    }
+    .btn-vintage:active {
+      transform: translateY(0) scale(0.98);
+    }
+
+    /* Con dấu xoay tròn tự động */
+    @keyframes slowSpin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .seal-spin {
+      animation: slowSpin 20s linear infinite;
+    }
+
+    /* Con trỏ máy chữ blink */
+    .typing-cursor::after {
+      content: '|';
+      animation: blink 0.8s infinite;
+      color: #c07a50;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
     }
 
     /* 滑桿樣式 */
@@ -122,37 +169,47 @@
       width: 8px;
       height: 8px;
       border-color: #c07a50;
+      transition: all 0.3s ease;
     }
     .v-tl { top: 6px; left: 6px; border-top: 1px solid; border-left: 1px solid; }
     .v-tr { top: 6px; right: 6px; border-top: 1px solid; border-right: 1px solid; }
     .v-bl { bottom: 6px; left: 6px; border-bottom: 1px solid; border-left: 1px solid; }
     .v-br { bottom: 6px; right: 6px; border-bottom: 1px solid; border-right: 1px solid; }
+
+    .vintage-card:hover .vintage-corner {
+      width: 12px;
+      height: 12px;
+    }
   </style>
 </head>
-<body class="flex flex-col min-h-screen vintage-grid">
+<body class="flex flex-col min-h-screen vintage-grid selection:bg-vintage-accent selection:text-white">
+
+  <!-- Interactive Dust & Click Burst Canvas -->
+  <canvas id="dustCanvas" class="fixed inset-0 pointer-events-none z-50"></canvas>
 
   <!-- ==================== 頁首標題區 ==================== -->
-  <header class="border-b border-vintage-border bg-white/80 backdrop-blur-md sticky top-0 z-50">
+  <header class="border-b border-vintage-border bg-white/80 backdrop-blur-md sticky top-0 z-40">
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-vintage-bg border border-vintage-border flex items-center justify-center text-vintage-accent font-serif font-bold text-xl shadow-sm">
+        <div class="w-10 h-10 rounded-xl bg-vintage-bg border border-vintage-border flex items-center justify-center text-vintage-accent font-serif font-bold text-xl shadow-sm transform hover:rotate-12 transition-transform">
           📜
         </div>
         <div>
           <h1 class="text-xl md:text-2xl font-serif font-bold tracking-wide text-vintage-text">
             復古經典 <span class="text-vintage-accent font-mono text-lg md:text-xl">// 迷因產生器</span>
           </h1>
-          <p class="text-[11px] text-vintage-muted -mt-0.5 font-mono">CLASSIC MEME GENERATOR • 典雅日誌風格</p>
+          <p id="typewriterText" class="text-[11px] text-vintage-muted -mt-0.5 font-mono min-h-[16px] typing-cursor"></p>
         </div>
       </div>
-      <span class="text-xs px-3 py-1 rounded-full bg-vintage-bg text-vintage-accent font-mono border border-vintage-border shadow-sm">
+      <span class="text-xs px-3 py-1 rounded-full bg-vintage-bg text-vintage-accent font-mono border border-vintage-border shadow-sm flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-vintage-accent animate-ping"></span>
         ✒️ 繁體中文典雅版
       </span>
     </div>
   </header>
 
   <!-- ==================== 主內容區 ==================== -->
-  <main class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+  <main class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10">
 
     <!-- ==================== 控制面板區 (左側) ==================== -->
     <section class="lg:col-span-5 flex flex-col gap-5 p-5 md:p-6 rounded-2xl vintage-card relative">
@@ -171,7 +228,7 @@
       <!-- 1. 上傳底圖區 -->
       <div class="space-y-1.5">
         <label class="block text-xs font-serif font-bold text-vintage-text">1. 上傳底圖（選擇本機檔案）</label>
-        <div id="drop-zone" class="border-2 border-dashed border-vintage-border hover:border-vintage-accent rounded-xl p-4 text-center cursor-pointer bg-vintage-bg/50 hover:bg-vintage-bg transition-all relative group">
+        <div id="drop-zone" class="border-2 border-dashed border-vintage-border hover:border-vintage-accent rounded-xl p-4 text-center cursor-pointer bg-vintage-bg/50 hover:bg-vintage-bg transition-all relative group shine-effect">
           <input type="file" id="image-loader" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
           <div class="space-y-1 pointer-events-none">
             <div class="w-10 h-10 mx-auto rounded-full bg-white flex items-center justify-center text-vintage-accent shadow-sm group-hover:scale-110 transition-transform border border-vintage-border">
@@ -246,7 +303,7 @@
 
       <!-- 4. 一鍵下載按鈕 -->
       <div class="pt-2 mt-auto">
-        <button id="download-btn" class="w-full btn-vintage font-serif font-bold py-3 px-6 rounded-xl flex items-center justify-center gap-2 shadow-md cursor-pointer text-sm">
+        <button id="download-btn" class="w-full btn-vintage font-serif font-bold py-3 px-6 rounded-xl flex items-center justify-center gap-2 shadow-md cursor-pointer text-sm shine-effect">
           <span>📜</span>
           <span>匯出復古迷因 (Download Meme)</span>
         </button>
@@ -262,7 +319,7 @@
 
       <div class="w-full flex items-center justify-between mb-3 px-1">
         <span class="text-xs font-serif font-bold text-vintage-text flex items-center gap-1.5">
-          <span class="w-2 h-2 rounded-full bg-vintage-accent animate-pulse"></span>
+          <span class="w-2 h-2 rounded-full bg-vintage-accent animate-bounce"></span>
           即時畫布預覽 (PREVIEW CANVAS)
         </span>
         <span class="text-[11px] font-mono text-vintage-accent bg-vintage-bg px-2.5 py-0.5 rounded-full border border-vintage-border">
@@ -271,9 +328,9 @@
       </div>
 
       <!-- 迷因畫面區域 -->
-      <div id="meme-container" class="relative max-w-full overflow-hidden rounded-xl shadow-lg bg-white flex items-center justify-center border border-vintage-border select-none">
+      <div id="meme-container" class="relative max-w-full overflow-hidden rounded-xl shadow-lg bg-white flex items-center justify-center border border-vintage-border select-none shine-effect group">
         <!-- 預設迷因底圖 -->
-        <img id="meme-image" src="https://i.postimg.cc/Gt2rsct9/images.jpg" alt="迷因底圖" class="max-h-[62vh] w-auto object-contain block">
+        <img id="meme-image" src="https://i.postimg.cc/Gt2rsct9/images.jpg" alt="迷因底圖" class="max-h-[62vh] w-auto object-contain block transition-transform duration-500 group-hover:scale-[1.01]">
 
         <!-- 顯示於底圖上的上方文字 -->
         <div id="top-text-display" class="absolute top-[5%] left-0 right-0 px-4 text-center font-meme text-white tracking-wide uppercase leading-tight meme-text-shadow break-words pointer-events-none" style="font-size: 38px;">
@@ -284,16 +341,27 @@
         <div id="bottom-text-display" class="absolute bottom-[5%] left-0 right-0 px-4 text-center font-meme text-white tracking-wide uppercase leading-tight meme-text-shadow break-words pointer-events-none" style="font-size: 38px;">
           但生活給了你滿滿的可愛能量
         </div>
+
+        <!-- Con dấu xoay tròn trang trí góc dưới -->
+        <div class="absolute bottom-3 right-3 pointer-events-none opacity-80 z-20 w-12 h-12 rounded-full border border-vintage-accent/40 bg-vintage-bg/60 backdrop-blur-sm p-0.5 flex items-center justify-center">
+          <svg class="w-full h-full text-vintage-accent seal-spin" viewBox="0 0 100 100">
+            <path id="sealPath" d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" fill="none"/>
+            <text font-size="11.5" font-family="Courier Prime" fill="currentColor" letter-spacing="2">
+              <textPath href="#sealPath">• VINTAGE MEME • CREATOR </textPath>
+            </text>
+          </svg>
+          <span class="font-mono text-[9px] font-bold text-vintage-accent absolute">1988</span>
+        </div>
       </div>
     </section>
 
   </main>
 
-  <footer class="border-t border-vintage-border bg-white/50 py-3.5 text-center text-xs font-mono text-vintage-muted">
+  <footer class="border-t border-vintage-border bg-white/50 py-3.5 text-center text-xs font-mono text-vintage-muted relative z-10">
     <p>© 2026 復古典雅迷因產生器 • VINTAGE MEME MAKER</p>
   </footer>
 
-  <!-- ==================== JavaScript Tương Tác & Logic ==================== -->
+  <!-- ==================== JavaScript Tương Tác & Hiệu Ứng 動態效果 ==================== -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       // Elements
@@ -318,7 +386,102 @@
       const downloadBtn = document.getElementById('download-btn');
       const dropZone = document.getElementById('drop-zone');
 
-      // 1. Text Change Handlers
+      // --- 1. TYPEWRITER ANIMATION ---
+      const fullText = "CLASSIC MEME GENERATOR • 典雅日誌風格";
+      const typewriterEl = document.getElementById("typewriterText");
+      let typeIndex = 0;
+
+      function typeWriter() {
+        if (typeIndex < fullText.length) {
+          typewriterEl.textContent += fullText.charAt(typeIndex);
+          typeIndex++;
+          setTimeout(typeWriter, 60);
+        }
+      }
+      typeWriter();
+
+      // --- 2. WEB AUDIO SOUND EFFECTS ---
+      let audioCtx = null;
+      function playSoftClickSFX() {
+        try {
+          if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(360, audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(520, audioCtx.currentTime + 0.08);
+          gain.gain.setValueAtTime(0.03, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.08);
+        } catch(e) {}
+      }
+
+      // --- 3. DUST & CLICK PARTICLES CANVAS ---
+      const canvas = document.getElementById('dustCanvas');
+      const ctx = canvas.getContext('2d');
+
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      window.addEventListener('resize', resizeCanvas);
+      resizeCanvas();
+
+      let burstParticles = [];
+      function triggerClickBurst(e) {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        for (let i = 0; i < 14; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = Math.random() * 3 + 1.2;
+          burstParticles.push({
+            x: x,
+            y: y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            size: Math.random() * 3 + 1,
+            color: Math.random() > 0.5 ? '#c07a50' : '#d4a359',
+            alpha: 1
+          });
+        }
+      }
+
+      window.addEventListener('click', (e) => {
+        triggerClickBurst(e);
+      });
+
+      function animateCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let i = burstParticles.length - 1; i >= 0; i--) {
+          let bp = burstParticles[i];
+          bp.x += bp.vx;
+          bp.y += bp.vy;
+          bp.vy += 0.04;
+          bp.alpha -= 0.025;
+
+          if (bp.alpha <= 0) {
+            burstParticles.splice(i, 1);
+            continue;
+          }
+
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, bp.alpha);
+          ctx.fillStyle = bp.color;
+          ctx.beginPath();
+          ctx.arc(bp.x, bp.y, bp.size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+        requestAnimationFrame(animateCanvas);
+      }
+      animateCanvas();
+
+      // --- 4. MEME GENERATOR INTERACTION LOGIC ---
       topTextInput.addEventListener('input', (e) => {
         topTextDisplay.textContent = e.target.value || '';
       });
@@ -327,7 +490,6 @@
         bottomTextDisplay.textContent = e.target.value || '';
       });
 
-      // 2. Slider Adjustments
       fontSizeSlider.addEventListener('input', (e) => {
         const val = e.target.value + 'px';
         fontSizeVal.textContent = val;
@@ -347,7 +509,6 @@
         bottomTextDisplay.style.bottom = val;
       });
 
-      // 3. Color Adjustments
       textColorPicker.addEventListener('input', (e) => {
         topTextDisplay.style.color = e.target.value;
         bottomTextDisplay.style.color = e.target.value;
@@ -358,9 +519,9 @@
         bottomTextDisplay.style.setProperty('--stroke-color', e.target.value);
       });
 
-      // 4. File Upload (FileReader)
       function handleFile(file) {
         if (file && file.type.startsWith('image/')) {
+          playSoftClickSFX();
           const reader = new FileReader();
           reader.onload = function(evt) {
             memeImage.src = evt.target.result;
@@ -373,7 +534,6 @@
         handleFile(e.target.files[0]);
       });
 
-      // Drag & Drop
       ['dragenter', 'dragover'].forEach(eventName => {
         dropZone.addEventListener(eventName, (e) => {
           e.preventDefault();
@@ -394,8 +554,9 @@
         handleFile(files[0]);
       });
 
-      // 5. Download Image via html2canvas
-      downloadBtn.addEventListener('click', () => {
+      // --- 5. EXPORT / DOWNLOAD MEME ---
+      downloadBtn.addEventListener('click', (e) => {
+        playSoftClickSFX();
         downloadBtn.innerHTML = '<span>⏳</span><span>處理中...</span>';
         downloadBtn.disabled = true;
 
