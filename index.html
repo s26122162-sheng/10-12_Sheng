@@ -16,15 +16,15 @@
                 extend: {
                     colors: {
                         vintage: {
-                            bg: '#fbf8f3',        /* Soft warm off-white/cream */
-                            card: '#ffffff',      /* Clean white card */
-                            border: '#e2d7c5',    /* Antique paper line */
-                            accent: '#c07a50',    /* Warm terracotta / burnt orange */
-                            gold: '#d4a359',      /* Soft vintage gold */
-                            sage: '#8a9a86',      /* Muted vintage green */
-                            text: '#2c2825',      /* Deep sepia / soft black */
-                            muted: '#7a7067',     /* Medium warm grey/brown */
-                            locked: '#f0eae1'     /* Aged paper tone */
+                            bg: '#fbf8f3',        
+                            card: '#ffffff',      
+                            border: '#e2d7c5',    
+                            accent: '#c07a50',    
+                            gold: '#d4a359',      
+                            sage: '#8a9a86',      
+                            text: '#2c2825',      
+                            muted: '#7a7067',     
+                            locked: '#f0eae1'     
                         }
                     },
                     fontFamily: {
@@ -56,40 +56,86 @@
 
         /* Vintage Paper Card Panel */
         .vintage-panel {
-            background: rgba(255, 255, 255, 0.85);
+            background: rgba(255, 255, 255, 0.88);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
             border: 1px solid #e2d7c5;
             box-shadow: 0 4px 20px rgba(180, 160, 140, 0.15), inset 0 0 30px rgba(251, 248, 243, 0.5);
         }
 
-        /* Delicate Gold/Terracotta Frames */
+        /* Floating Animation for Header Frame */
+        @keyframes gentleFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-6px) rotate(0.5deg); }
+        }
+
+        .vintage-avatar-container {
+            animation: gentleFloat 6s ease-in-out infinite;
+        }
+
         .vintage-avatar-frame {
             box-shadow: 0 0 0 4px #fbf8f3, 0 0 0 6px #c07a50, 0 8px 20px rgba(192, 122, 80, 0.2);
         }
 
-        /* Active Card Hover Effect */
+        /* Rotating Vintage Wax Seal */
+        @keyframes slowSpin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .seal-spin {
+            animation: slowSpin 20s linear infinite;
+        }
+
+        /* Shine Sweep Effect on Card Hover */
         .card-active {
-            transition: all 0.35s cubic-bezier(0.165, 0.84, 0.44, 1);
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
             position: relative;
+            overflow: hidden;
+        }
+
+        .card-active::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(212, 163, 89, 0.25), transparent);
+            transition: 0.6s ease;
+        }
+
+        .card-active:hover::before {
+            left: 100%;
         }
 
         .card-active:hover {
-            transform: translateY(-5px);
+            transform: translateY(-8px) scale(1.01);
             border-color: #c07a50;
-            box-shadow: 0 12px 28px rgba(192, 122, 80, 0.18);
+            box-shadow: 0 14px 30px rgba(192, 122, 80, 0.22);
         }
 
-        /* Locked Card Subtle Shake */
+        /* Locked Card Shake & Tilt */
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-3px); }
-            40%, 80% { transform: translateX(3px); }
+            20%, 60% { transform: translateX(-4px) rotate(-1deg); }
+            40%, 80% { transform: translateX(4px) rotate(1deg); }
         }
 
         .card-locked:hover {
-            animation: shake 0.3s ease-in-out;
+            animation: shake 0.35s ease-in-out;
             border-color: #d4a359;
+        }
+
+        /* Typewriter Cursor Effect */
+        .typing-cursor::after {
+            content: '|';
+            animation: blink 0.8s infinite;
+            color: #c07a50;
+            font-weight: bold;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
         }
 
         /* Vintage Corner Ornaments */
@@ -98,21 +144,28 @@
             width: 8px;
             height: 8px;
             border-color: #c07a50;
+            transition: all 0.3s ease;
         }
         .v-tl { top: 4px; left: 4px; border-top: 1px solid; border-left: 1px solid; }
         .v-tr { top: 4px; right: 4px; border-top: 1px solid; border-right: 1px solid; }
         .v-bl { bottom: 4px; left: 4px; border-bottom: 1px solid; border-left: 1px solid; }
         .v-br { bottom: 4px; right: 4px; border-bottom: 1px solid; border-right: 1px solid; }
+
+        .card-active:hover .vintage-corner {
+            width: 12px;
+            height: 12px;
+        }
     </style>
 </head>
 <body class="min-h-screen relative flex flex-col justify-between selection:bg-vintage-accent selection:text-white">
 
     <div class="fixed inset-0 vintage-grid pointer-events-none z-0"></div>
-    <canvas id="dustCanvas" class="fixed inset-0 pointer-events-none z-0 opacity-40"></canvas>
+    <!-- Interactive Dust & Click Burst Canvas -->
+    <canvas id="dustCanvas" class="fixed inset-0 pointer-events-none z-10"></canvas>
 
-    <!-- Controls Floating Bar (Audio / Toggle) -->
+    <!-- Controls Floating Bar -->
     <div class="fixed top-4 right-4 z-50 flex items-center gap-3">
-        <button id="soundToggleBtn" onclick="toggleAudio()" class="vintage-panel px-3 py-1.5 rounded-full text-xs font-mono text-vintage-accent border border-vintage-border hover:bg-vintage-accent/10 transition flex items-center gap-2 shadow-sm">
+        <button id="soundToggleBtn" onclick="toggleAudio()" class="vintage-panel px-3.5 py-1.5 rounded-full text-xs font-mono text-vintage-accent border border-vintage-border hover:bg-vintage-accent/10 transition flex items-center gap-2 shadow-sm transform hover:scale-105 active:scale-95">
             <span id="soundIcon">🔊</span> <span id="soundText">SFX: ON</span>
         </button>
     </div>
@@ -123,40 +176,47 @@
         <header class="w-full max-w-3xl vintage-panel rounded-3xl p-6 sm:p-10 mb-10 border border-vintage-border text-center relative overflow-hidden">
             <!-- Header Stamp Info -->
             <div class="absolute top-3 left-4 font-mono text-[10px] text-vintage-muted/70 tracking-widest uppercase">ARCHIVE // STUDENT_PORTFOLIO_V2.0</div>
-            <div class="absolute top-3 right-4 font-mono text-[10px] text-vintage-sage tracking-widest uppercase">STATUS // ACTIVE</div>
+            <div class="absolute top-3 right-4 font-mono text-[10px] text-vintage-sage tracking-widest uppercase flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-vintage-sage animate-ping"></span> STATUS // ACTIVE
+            </div>
 
-            <!-- Profile Avatar with Vintage Frame -->
-            <div class="relative inline-block my-4">
+            <!-- Profile Avatar with Floating & Spinning Seal Effect -->
+            <div class="relative inline-block my-4 vintage-avatar-container">
                 <div class="w-28 h-28 sm:w-32 sm:h-32 rounded-full p-1 vintage-avatar-frame relative z-10 mx-auto bg-vintage-bg">
                     <img
-                        src=" "
+                        src="https://i.postimg.cc/239Dxgb3/avatar.jpg"
                         alt="Profile Avatar"
-                        class="w-full h-full object-cover rounded-full sepia-[0.25] contrast-105"
+                        class="w-full h-full object-cover rounded-full sepia-[0.15] contrast-105"
                         onerror="this.src='https://placehold.co/150x150/fbf8f3/c07a50?text=PORTRAIT'"
                     >
                 </div>
-                <!-- Floating Vintage Badge -->
-                <span class="absolute bottom-0 right-0 z-20 bg-vintage-accent text-white font-mono text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-white shadow-md uppercase tracking-wider">
-                    CHAPTER 02
-                </span>
+                
+                <!-- Rotating Decorative Seal Badge -->
+                <div class="absolute -bottom-2 -right-2 z-20 w-12 h-12 bg-vintage-accent rounded-full p-0.5 border-2 border-white shadow-lg flex items-center justify-center">
+                    <svg class="w-full h-full text-white/40 seal-spin absolute inset-0" viewBox="0 0 100 100">
+                        <path id="sealPath" d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" fill="none"/>
+                        <text font-size="11.5" font-family="Courier Prime" fill="currentColor" letter-spacing="2">
+                            <textPath href="#sealPath">PASSED • CLASSIC JOURNAL •</textPath>
+                        </text>
+                    </svg>
+                    <span class="font-mono text-[10px] font-bold text-white relative z-10">LV.2</span>
+                </div>
             </div>
 
-            <!-- Student Name & Title -->
+            <!-- Student Name & Typewriter Title -->
             <h1 class="text-3xl sm:text-4xl font-serif font-bold tracking-wide text-vintage-text mb-2">
                 <span class="text-vintage-accent font-mono text-xl sm:text-2xl">// 鄧友盛</span>
             </h1>
-            <p class="font-mono text-xs sm:text-sm text-vintage-muted tracking-widest mb-6">
-                網頁前端程式設計 // VINTAGE JOURNAL PORTFOLIO
-            </p>
+            <p id="typewriterText" class="font-mono text-xs sm:text-sm text-vintage-muted tracking-widest mb-6 min-h-[20px] typing-cursor"></p>
 
             <!-- Mission Progress Bar -->
             <div class="w-full max-w-md mx-auto bg-vintage-locked/80 rounded-full p-1 border border-vintage-border shadow-inner">
                 <div class="flex justify-between text-[11px] font-mono px-2 mb-1 text-vintage-muted">
-                    <span class="text-vintage-accent">學習總進度 (COURSE PROGRESS)</span>
+                    <span class="text-vintage-accent">學習總進度 (PROGRESS)</span>
                     <span class="text-vintage-gold font-bold">4 / 16 COMPLETED (25%)</span>
                 </div>
                 <div class="w-full bg-vintage-border/40 h-2.5 rounded-full overflow-hidden relative">
-                    <div class="bg-gradient-to-r from-vintage-gold to-vintage-accent h-full rounded-full transition-all duration-1000" style="width: 25%"></div>
+                    <div class="bg-gradient-to-r from-vintage-gold to-vintage-accent h-full rounded-full transition-all duration-1000 shadow-sm" style="width: 25%"></div>
                 </div>
             </div>
         </header>
@@ -164,7 +224,7 @@
         <section class="w-full">
             <div class="flex items-center justify-between mb-6 border-b border-vintage-border pb-3">
                 <h2 class="text-xl sm:text-2xl font-serif font-bold text-vintage-text flex items-center gap-2">
-                    <span class="inline-block w-2.5 h-2.5 bg-vintage-accent rounded-full"></span>
+                    <span class="inline-block w-2.5 h-2.5 bg-vintage-accent rounded-full animate-bounce"></span>
                     CHAPTER SELECT <span class="text-xs font-mono text-vintage-muted font-normal">// 課程章節選擇</span>
                 </h2>
                 <span class="font-mono text-xs text-vintage-accent">TOTAL: 16 CHAPTERS</span>
@@ -174,7 +234,7 @@
             <div id="missionGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
                 
                 <!-- BUTTON 1: UNLOCKED -->
-                <a href="w1/index.html" onmouseenter="playHoverSFX()" onclick="playClickSFX()" class="card-active vintage-panel rounded-2xl p-5 border border-vintage-border block relative group">
+                <a href="w1/index.html" onmouseenter="playHoverSFX()" onclick="triggerClickBurst(event); playClickSFX();" class="card-active vintage-panel rounded-2xl p-5 border border-vintage-border block relative group">
                     <div class="vintage-corner v-tl"></div>
                     <div class="vintage-corner v-tr"></div>
                     <div class="vintage-corner v-bl"></div>
@@ -188,14 +248,14 @@
                     </div>
                     <h3 class="text-lg font-serif font-bold text-vintage-text group-hover:text-vintage-accent transition mb-1">Week 1 - 數位名片</h3>
                     <p class="text-xs text-vintage-muted font-mono mb-4">HTML/CSS 基礎與個人形象名片建置</p>
-                    <div class="flex items-center justify-between font-mono text-xs text-vintage-accent group-hover:translate-x-1 transition">
+                    <div class="flex items-center justify-between font-mono text-xs text-vintage-accent group-hover:translate-x-1.5 transition-transform duration-300">
                         <span>OPEN CHAPTER</span>
                         <span>➔</span>
                     </div>
                 </a>
 
                 <!-- BUTTON 2: UNLOCKED -->
-                <a href="w2/index.html" onmouseenter="playHoverSFX()" onclick="playClickSFX()" class="card-active vintage-panel rounded-2xl p-5 border border-vintage-border block relative group">
+                <a href="w2/index.html" onmouseenter="playHoverSFX()" onclick="triggerClickBurst(event); playClickSFX();" class="card-active vintage-panel rounded-2xl p-5 border border-vintage-border block relative group">
                     <div class="vintage-corner v-tl"></div>
                     <div class="vintage-corner v-tr"></div>
                     <div class="vintage-corner v-bl"></div>
@@ -209,14 +269,14 @@
                     </div>
                     <h3 class="text-lg font-serif font-bold text-vintage-text group-hover:text-vintage-accent transition mb-1">Week 2 - 今天吃甚麼?</h3>
                     <p class="text-xs text-vintage-muted font-mono mb-4">JavaScript 隨機選擇器與互動應用</p>
-                    <div class="flex items-center justify-between font-mono text-xs text-vintage-accent group-hover:translate-x-1 transition">
+                    <div class="flex items-center justify-between font-mono text-xs text-vintage-accent group-hover:translate-x-1.5 transition-transform duration-300">
                         <span>OPEN CHAPTER</span>
                         <span>➔</span>
                     </div>
                 </a>
 
                  <!-- BUTTON 3: UNLOCKED -->
-                <a href="w3/index.html" onmouseenter="playHoverSFX()" onclick="playClickSFX()" class="card-active vintage-panel rounded-2xl p-5 border border-vintage-border block relative group">
+                <a href="w3/index.html" onmouseenter="playHoverSFX()" onclick="triggerClickBurst(event); playClickSFX();" class="card-active vintage-panel rounded-2xl p-5 border border-vintage-border block relative group">
                     <div class="vintage-corner v-tl"></div>
                     <div class="vintage-corner v-tr"></div>
                     <div class="vintage-corner v-bl"></div>
@@ -230,14 +290,14 @@
                     </div>
                     <h3 class="text-lg font-serif font-bold text-vintage-text group-hover:text-vintage-accent transition mb-1">Week 3 - CSS 佈局</h3>
                     <p class="text-xs text-vintage-muted font-mono mb-4">Flexbox 與 Grid 佈局原理與實作</p>
-                    <div class="flex items-center justify-between font-mono text-xs text-vintage-accent group-hover:translate-x-1 transition">
+                    <div class="flex items-center justify-between font-mono text-xs text-vintage-accent group-hover:translate-x-1.5 transition-transform duration-300">
                         <span>OPEN CHAPTER</span>
                         <span>➔</span>
                     </div>
                 </a>
                 
                 <!-- BUTTON 4: UNLOCKED -->
-                <a href="w4/index.html" onmouseenter="playHoverSFX()" onclick="playClickSFX()" class="card-active vintage-panel rounded-2xl p-5 border border-vintage-border block relative group">
+                <a href="w4/index.html" onmouseenter="playHoverSFX()" onclick="triggerClickBurst(event); playClickSFX();" class="card-active vintage-panel rounded-2xl p-5 border border-vintage-border block relative group">
                     <div class="vintage-corner v-tl"></div>
                     <div class="vintage-corner v-tr"></div>
                     <div class="vintage-corner v-bl"></div>
@@ -251,13 +311,12 @@
                     </div>
                     <h3 class="text-lg font-serif font-bold text-vintage-text group-hover:text-vintage-accent transition mb-1">Week 4 - 響應式設計</h3>
                     <p class="text-xs text-vintage-muted font-mono mb-4">RWD 跨裝置適應與排版體驗</p>
-                    <div class="flex items-center justify-between font-mono text-xs text-vintage-accent group-hover:translate-x-1 transition">
+                    <div class="flex items-center justify-between font-mono text-xs text-vintage-accent group-hover:translate-x-1.5 transition-transform duration-300">
                         <span>OPEN CHAPTER</span>
                         <span>➔</span>
                     </div>
                 </a>
                 
-                <!-- BUTTONS 5 to 16: LOCKED (Dynamically Generated via JS) -->
             </div>
         </section>
     </main>
@@ -268,9 +327,21 @@
     </footer>
 
     <script>
-        // --- 1. GENERATE LOCKED BUTTONS 5 TO 16 ---
+        // --- 1. TYPEWRITER ANIMATION FOR HEADER ---
+        const fullText = "網頁前端程式設計 // VINTAGE JOURNAL PORTFOLIO";
+        const typewriterEl = document.getElementById("typewriterText");
+        let typeIndex = 0;
+
+        function typeWriter() {
+            if (typeIndex < fullText.length) {
+                typewriterEl.textContent += fullText.charAt(typeIndex);
+                typeIndex++;
+                setTimeout(typeWriter, 50);
+            }
+        }
+
+        // --- 2. GENERATE LOCKED BUTTONS 5 TO 16 ---
         const missionGrid = document.getElementById('missionGrid');
-        
         const upcomingTitles = [
             "JavaScript 基礎語法與 DOM",
             "Event 事件處理與互動",
@@ -293,7 +364,10 @@
 
             const lockedCard = document.createElement('div');
             lockedCard.className = 'card-locked bg-vintage-locked/70 rounded-2xl p-5 border border-vintage-border/80 relative cursor-not-allowed select-none opacity-80 hover:opacity-100 transition';
-            lockedCard.onclick = () => playLockedSFX();
+            lockedCard.onclick = (e) => {
+                triggerClickBurst(e, '#7a7067');
+                playLockedSFX();
+            };
             lockedCard.onmouseenter = () => playHoverSFX(true);
 
             lockedCard.innerHTML = `
@@ -315,7 +389,7 @@
             missionGrid.appendChild(lockedCard);
         }
 
-        // --- 2. WEB AUDIO SYNTHESIZER FOR SOFT VINTAGE SOUND EFFECTS ---
+        // --- 3. WEB AUDIO SYNTHESIZER ---
         let audioEnabled = true;
         let audioCtx = null;
 
@@ -332,7 +406,6 @@
             document.getElementById('soundText').innerText = audioEnabled ? 'SFX: ON' : 'SFX: OFF';
         }
 
-        /* Gentle Acoustic Hover Tone */
         function playHoverSFX(isLocked = false) {
             if (!audioEnabled) return;
             try {
@@ -354,7 +427,6 @@
             } catch (e) {}
         }
 
-        /* Soft Warm Marimba-like Click */
         function playClickSFX() {
             if (!audioEnabled) return;
             try {
@@ -363,8 +435,8 @@
                 const gain = ctx.createGain();
 
                 osc.type = 'sine';
-                osc.frequency.setValueAtTime(440, ctx.currentTime); // A4
-                osc.frequency.exponentialRampToValueAtTime(659.25, ctx.currentTime + 0.12); // E5
+                osc.frequency.setValueAtTime(440, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(659.25, ctx.currentTime + 0.12);
 
                 gain.gain.setValueAtTime(0.05, ctx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
@@ -376,7 +448,6 @@
             } catch (e) {}
         }
 
-        /* Subtle Wooden Lock Sound */
         function playLockedSFX() {
             if (!audioEnabled) return;
             try {
@@ -398,7 +469,7 @@
             } catch (e) {}
         }
 
-        // --- 3. BACKGROUND SOFT DUST/MOTES PARTICLES ---
+        // --- 4. ADVANCED CANVAS: DUST MOTES & CLICK BURST ANIMATION ---
         const canvas = document.getElementById('dustCanvas');
         const ctx = canvas.getContext('2d');
 
@@ -409,18 +480,46 @@
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
-        const particles = Array.from({ length: 35 }, () => ({
+        /* Floating background dust particles */
+        const dustParticles = Array.from({ length: 40 }, () => ({
             x: Math.random() * canvas.width,
             y: Math.random() * canvas.height,
             size: Math.random() * 2 + 0.8,
             speedX: (Math.random() - 0.5) * 0.3,
             speedY: (Math.random() - 0.5) * 0.3,
-            color: Math.random() > 0.5 ? '#c07a50' : '#d4a359'
+            color: Math.random() > 0.5 ? '#c07a50' : '#d4a359',
+            alpha: Math.random() * 0.5 + 0.2
         }));
 
-        function animateParticles() {
+        /* Click explosion particles array */
+        let burstParticles = [];
+
+        function triggerClickBurst(e, overrideColor = null) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            for (let i = 0; i < 16; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 3 + 1.5;
+                burstParticles.push({
+                    x: x,
+                    y: y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    size: Math.random() * 3.5 + 1.5,
+                    color: overrideColor || (Math.random() > 0.5 ? '#c07a50' : '#d4a359'),
+                    alpha: 1,
+                    life: 1
+                });
+            }
+        }
+
+        function animateCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => {
+
+            /* Render floating dust */
+            dustParticles.forEach(p => {
                 p.x += p.speedX;
                 p.y += p.speedY;
 
@@ -429,16 +528,44 @@
                 if (p.y < 0) p.y = canvas.height;
                 if (p.y > canvas.height) p.y = 0;
 
+                ctx.save();
+                ctx.globalAlpha = p.alpha;
                 ctx.fillStyle = p.color;
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
                 ctx.fill();
+                ctx.restore();
             });
-            requestAnimationFrame(animateParticles);
+
+            /* Render click bursts */
+            for (let i = burstParticles.length - 1; i >= 0; i--) {
+                let bp = burstParticles[i];
+                bp.x += bp.vx;
+                bp.y += bp.vy;
+                bp.vy += 0.05; // gravity
+                bp.alpha -= 0.025;
+                bp.life -= 0.025;
+
+                if (bp.life <= 0) {
+                    burstParticles.splice(i, 1);
+                    continue;
+                }
+
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, bp.alpha);
+                ctx.fillStyle = bp.color;
+                ctx.beginPath();
+                ctx.arc(bp.x, bp.y, bp.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            requestAnimationFrame(animateCanvas);
         }
 
         window.onload = function() {
-            animateParticles();
+            typeWriter();
+            animateCanvas();
         };
     </script>
 </body>
