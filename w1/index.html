@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>鄧友盛26122162 | 個人數位名片</title>
+    
+    <!-- CSS 樣式設定 -->
+    <style>
+        /* 柔和舒適配色：鼠尾草綠與溫暖奶油色 */
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, #eaf0ec 0%, #dbe3dd 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+        }
+
+        /* 主名片卡片 */
+        .card {
+            background-color: #fcfdfc;
+            width: 100%;
+            max-width: 320px;
+            padding: 35px 25px;
+            border-radius: 24px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(160, 175, 165, 0.25);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 14px 30px rgba(160, 175, 165, 0.35);
+        }
+
+        /* 圓形大頭貼（裁切自 IMG_8960_2.jpeg） */
+        .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            object-position: center 20%;
+            border: 4px solid #cad8cf;
+            box-shadow: 0 4px 12px rgba(160, 175, 165, 0.3);
+            margin-bottom: 15px;
+        }
+
+        /* 姓名 + Facebook 藍勾勾 */
+        .name {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 20px;
+            color: #2c3630;
+            margin: 0 0 8px 0;
+            letter-spacing: 0.5px;
+        }
+
+        .verified-badge {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .bio {
+            font-size: 13px;
+            color: #637268;
+            line-height: 1.5;
+            margin: 0 0 25px 0;
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn {
+            display: block;
+            padding: 12px 0;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.25s ease;
+        }
+
+        /* Instagram 按鈕 */
+        .btn-instagram {
+            background-color: #d8b4a0;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(216, 180, 160, 0.35);
+        }
+
+        .btn-instagram:hover {
+            background-color: #cca590;
+            transform: translateY(-2px);
+        }
+
+        /* Email 按鈕 */
+        .btn-email {
+            background-color: #a3b899;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(163, 184, 153, 0.35);
+        }
+
+        .btn-email:hover {
+            background-color: #94aa89;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <!-- 大頭貼照片 -->
+        <img class="avatar" src="IMG_8960_2.jpeg" alt="鄧友盛的大頭照">
+
+        <!-- 姓名與 Facebook 藍勾勾 -->
+        <h1 class="name">
+            鄧友盛26122162
+            <svg class="verified-badge" viewBox="0 0 24 24">
+                <path fill="#1877F2" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+        </h1>
+        
+        <p class="bio">⚙️ 設備維護與自動化探索中，保持熱情、持續優化！</p>
+
+        <!-- 聯絡按鈕 -->
+        <div class="button-group">
+            <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" class="btn btn-instagram">
+                Instagram
+            </a>
+            <a href="mailto:your-email@example.com" class="btn btn-email">
+                Email 聯絡我
+            </a>
+        </div>
+    </div>
+
+</body>
+</html>
