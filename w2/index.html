@@ -172,7 +172,10 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
 
-      // 1. 預設美食清單（已更新八戒越南咖啡照片連結）
+      // Link ảnh dự phòng chung khi link chính không tải được
+      const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80";
+
+      // 1. 預設美食清單
       const DEFAULT_FOODS = [
         {
           name: "八戒越南咖啡",
@@ -201,13 +204,15 @@
         }
       ];
 
-      // 2. 狀態變數
-      let foods = JSON.parse(localStorage.getItem('my_custom_foods')) || [...DEFAULT_FOODS];
+      // Tự động khôi phục dữ liệu chuẩn nếu phát hiện LocalStorage cũ thiếu dữ liệu ảnh
+      let storedFoods = JSON.parse(localStorage.getItem('my_custom_foods_v2'));
+      let foods = storedFoods || [...DEFAULT_FOODS];
+
       let history = [];
       let isDrawing = false;
       let soundEnabled = true;
 
-      // 3. Web Audio API 音效
+      // Web Audio API
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
       function playTickSound() {
@@ -247,7 +252,7 @@
         } catch (e) {}
       }
 
-      // 4. DOM Elements
+      // DOM Elements
       const mainTitle = document.getElementById('mainTitle');
       const subTitle = document.getElementById('subTitle');
       const drawBtn = document.getElementById('drawBtn');
@@ -267,7 +272,12 @@
       const foodNameInput = document.getElementById('foodNameInput');
       const foodItemList = document.getElementById('foodItemList');
 
-      // 5. Draw logic
+      // Tự động thay thế bằng ảnh mặc định nếu ảnh bị lỗi tải
+      foodImage.onerror = function() {
+        this.src = FALLBACK_IMAGE;
+      };
+
+      // Draw logic
       function startDraw() {
         if (isDrawing) return;
         if (foods.length === 0) {
@@ -316,7 +326,8 @@
         mainTitle.className = "text-4xl sm:text-5xl font-black text-orange-600 animate-bounce-in tracking-wider";
         subTitle.textContent = "太棒了！今天就決定吃這個：";
 
-        foodImage.src = selected.image || "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80";
+        // Gán ảnh
+        foodImage.src = selected.image || FALLBACK_IMAGE;
         imageWrapper.classList.remove('hidden');
         imageWrapper.classList.add('animate-bounce-in');
 
@@ -360,7 +371,7 @@
         `).join('');
       }
 
-      // 6. Menu Management
+      // Menu Management
       function renderMenuList() {
         foodItemList.innerHTML = foods.map((food, index) => `
           <div class="flex items-center justify-between p-2.5 bg-amber-50 rounded-xl border border-amber-100 hover:border-amber-300 transition-colors">
@@ -386,10 +397,10 @@
       }
 
       function saveFoodsToStorage() {
-        localStorage.setItem('my_custom_foods', JSON.stringify(foods));
+        localStorage.setItem('my_custom_foods_v2', JSON.stringify(foods));
       }
 
-      // 7. Event Listeners
+      // Event Listeners
       drawBtn.addEventListener('click', startDraw);
 
       clearHistoryBtn.addEventListener('click', () => {
@@ -418,7 +429,7 @@
         if (newName) {
           foods.push({
             name: newName,
-            image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80",
+            image: FALLBACK_IMAGE,
             url: `https://www.google.com/maps/search/${encodeURIComponent(newName)}`
           });
           saveFoodsToStorage();
