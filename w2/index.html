@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>今天吃什麼？隨機抽籤機</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Canvas Confetti CDN (慶祝彩帶效果) -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <!-- Google Fonts & FontAwesome 圖示庫 -->
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    /* 全局字體與可愛點點背景 */
+    body {
+      font-family: 'Zen Maru Gothic', sans-serif;
+      background-color: #FFFBEB;
+      background-image: radial-gradient(#FDE68A 1.5px, transparent 1.5px);
+      background-size: 24px 24px;
+    }
+
+    /* 關鍵影格動畫：彈跳登場 */
+    @keyframes bounceIn {
+      0% { opacity: 0; transform: scale(0.3) translateY(-50px); }
+      50% { opacity: 1; transform: scale(1.1) translateY(10px); }
+      70% { transform: scale(0.9) translateY(-5px); }
+      100% { transform: scale(1) translateY(0); }
+    }
+
+    /* 關鍵影格動畫：滾動轉盤效果 */
+    @keyframes slotRoll {
+      0% { transform: translateY(-20px); opacity: 0.5; }
+      50% { transform: translateY(20px); opacity: 0.8; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+
+    /* 關鍵影格動畫：按鈕呼吸發光 */
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.4), 0 8px 10px -6px rgba(245, 158, 11, 0.3); }
+      50% { box-shadow: 0 20px 35px -5px rgba(245, 158, 11, 0.6), 0 12px 15px -6px rgba(245, 158, 11, 0.4); }
+    }
+
+    /* 動態 Class 套用 */
+    .animate-bounce-in {
+      animation: bounceIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+    }
+
+    .animate-slot {
+      animation: slotRoll 0.1s linear infinite;
+    }
+
+    .glow-button {
+      animation: pulseGlow 2s infinite;
+    }
+
+    /* 客製化滾動條 */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #FEF3C7;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #F59E0B;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-between p-4 sm:p-6 text-amber-900 selection:bg-amber-200">
+
+  <!-- 頂部標題與功能按鈕 -->
+  <header class="w-full max-w-md flex justify-between items-center mb-4">
+    <div class="flex items-center gap-2">
+      <span class="text-3xl">🍲</span>
+      <h1 class="font-black text-xl text-amber-600 tracking-wider">美食隨機抽</h1>
+    </div>
+    <div class="flex gap-2">
+      <button id="soundToggleBtn" class="p-2 rounded-full bg-amber-100 text-amber-700 hover:bg-amber-200 transition-all" title="音效開關">
+        <i class="fa-solid fa-volume-high text-lg"></i>
+      </button>
+      <button id="menuModalBtn" class="p-2 rounded-full bg-amber-100 text-amber-700 hover:bg-amber-200 transition-all" title="管理菜單">
+        <i class="fa-solid fa-utensils text-lg"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- 主卡片區域 -->
+  <main class="w-full max-w-md bg-white/90 backdrop-blur-md rounded-3xl p-6 sm:p-8 shadow-2xl border-4 border-amber-200 flex flex-col items-center text-center relative overflow-hidden my-auto">
+
+    <!-- 大標題區塊（抽籤後替換並播放彈跳動畫） -->
+    <div id="titleContainer" class="w-full min-h-[120px] flex flex-col justify-center items-center my-2">
+      <h2 id="mainTitle" class="text-3xl sm:text-4xl font-black text-amber-600 tracking-wide transition-all duration-300">
+        今天吃什麼？
+      </h2>
+      <p id="subTitle" class="text-amber-500 font-medium text-sm mt-2">
+        解決你的選擇困難症！點擊下方按鈕開始抽籤 🎲
+      </p>
+    </div>
+
+    <!-- 照片展示區 -->
+    <div id="imageWrapper" class="hidden w-full my-4 relative group">
+      <div class="w-full h-48 sm:h-56 rounded-2xl overflow-hidden border-4 border-amber-300 shadow-md bg-amber-50 relative">
+        <img id="foodImage" src="" alt="美食照片" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+        <div id="foodBadge" class="absolute top-3 left-3 bg-amber-500/90 text-white font-bold text-xs px-3 py-1.5 rounded-full shadow-md backdrop-blur-sm">
+          今日美食首選
+        </div>
+      </div>
+    </div>
+
+    <!-- 操作按鈕區 -->
+    <div class="w-full flex flex-col items-center gap-3 mt-4">
+      <button id="drawBtn" class="glow-button w-full py-4 px-8 bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white font-black text-xl sm:text-2xl rounded-2xl shadow-lg transform active:scale-95 transition-all duration-150 flex items-center justify-center gap-2">
+        <i class="fa-solid fa-dice text-2xl"></i>
+        <span>點我抽籤</span>
+      </button>
+
+      <!-- Google Maps 導航按鈕 -->
+      <a id="mapBtn" href="#" target="_blank" rel="noopener noreferrer" class="hidden w-full py-3.5 px-6 bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white font-bold text-lg rounded-2xl shadow-md transform active:scale-95 transition-all duration-150 flex items-center justify-center gap-2">
+        <i class="fa-solid fa-location-dot"></i>
+        <span>馬上出發 (Google Map)</span>
+      </a>
+    </div>
+
+  </main>
+
+  <!-- 最近抽中紀錄 -->
+  <section class="w-full max-w-md mt-6">
+    <div class="flex justify-between items-center mb-2 px-2">
+      <h3 class="text-xs font-bold text-amber-700/70 uppercase tracking-wider flex items-center gap-1">
+        <i class="fa-solid fa-clock-rotate-left"></i> 最近抽中
+      </h3>
+      <button id="clearHistoryBtn" class="text-xs text-amber-600 hover:underline hidden">清除紀錄</button>
+    </div>
+    <div id="historyList" class="flex gap-2 overflow-x-auto pb-2 px-1 text-sm min-h-[38px]">
+      <span class="text-xs text-amber-700/50 italic px-2">尚無抽籤紀錄...</span>
+    </div>
+  </section>
+
+  <!-- 頁尾 -->
+  <footer class="mt-6 text-center text-xs text-amber-700/60 font-medium">
+    <p>做不了決定？就交給命運吧！✨</p>
+  </footer>
+
+  <!-- 自訂菜單彈窗 (Modal) -->
+  <div id="menuModal" class="fixed inset-0 bg-amber-950/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl border-4 border-amber-300 max-h-[85vh] flex flex-col">
+      <div class="flex justify-between items-center mb-4 pb-2 border-b-2 border-amber-100">
+        <h3 class="font-black text-xl text-amber-700 flex items-center gap-2">
+          <i class="fa-solid fa-list-check"></i> 自訂菜單清單
+        </h3>
+        <button id="closeModalBtn" class="text-amber-400 hover:text-amber-600 text-xl font-bold p-1">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- 新增菜單表單 -->
+      <form id="addFoodForm" class="flex gap-2 mb-4">
+        <input type="text" id="foodNameInput" placeholder="美食名稱 (如: 丹丹漢堡)" required class="flex-1 px-4 py-2 border-2 border-amber-200 rounded-xl focus:outline-none focus:border-amber-500 text-sm">
+        <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-4 py-2 rounded-xl text-sm transition-colors">
+          新增
+        </button>
+      </form>
+
+      <!-- 菜單列表 -->
+      <div id="foodItemList" class="flex-1 overflow-y-auto space-y-2 pr-1 my-2"></div>
+
+      <div class="mt-4 pt-3 border-t border-amber-100 flex justify-between items-center">
+        <button id="resetMenuBtn" class="text-xs text-amber-600 hover:underline">恢復預設菜單</button>
+        <button id="saveMenuBtn" class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-6 py-2 rounded-xl text-sm">
+          完成
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+      // 1. 預設美食清單
+      const DEFAULT_FOODS = [
+        {
+          name: "八戒越南咖啡",
+          image: "https://i.postimg.cc/vcf1F4tz/ba-jie-yue-nan-ka-fei-gang-shan-dian-4.webp",
+          url: "https://shorturl.at/iVaXp"
+        },
+        {
+          name: "樹科大奇積雞排（總店）",
+          image: "https://i.postimg.cc/LnLqKJ3V/shu-ke-da-qi-ji-ji-pai-zong-dian-2.png",
+          url: "https://maps.app.goo.gl/Ph42FRzEjfBhK7UG9"
+        },
+        {
+          name: "燕巢風味外省麵",
+          image: "https://i.postimg.cc/MvVc2nm5/yan-chao-feng-wei-wai-sheng-mian-1.png",
+          url: "https://maps.app.goo.gl/yUffWBPZQFP8Vig27"
+        },
+        {
+          name: "芳師傅私房菜",
+          image: "https://i.postimg.cc/HjfJhwXQ/fang-shi-fu-si-fang-cai5.webp",
+          url: "https://maps.app.goo.gl/2rCUgXzBZFbaGEEh8"
+        },
+        {
+          name: "阿丹鹹酥雞",
+          image: "https://i.postimg.cc/9zv4ndZn/a-dan-xian-su-ji-3.jpg",
+          url: "https://maps.app.goo.gl/LQkaAxmpm7oucB7M8"
+        }
+      ];
+
+      // 2. 狀態變數
+      let foods = JSON.parse(localStorage.getItem('my_custom_foods')) || [...DEFAULT_FOODS];
+      let history = [];
+      let isDrawing = false;
+      let soundEnabled = true;
+
+      // 3. Web Audio API 音效生成
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+      function playTickSound() {
+        if (!soundEnabled) return;
+        try {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.04);
+          gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.04);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.05);
+        } catch (e) {}
+      }
+
+      function playSuccessSound() {
+        if (!soundEnabled) return;
+        try {
+          const now = audioCtx.currentTime;
+          const notes = [523.25, 659.25, 783.99, 1046.50];
+          notes.forEach((freq, idx) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+            gain.gain.setValueAtTime(0.2, now + idx * 0.08);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.3);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now + idx * 0.08);
+            osc.stop(now + idx * 0.08 + 0.35);
+          });
+        } catch (e) {}
+      }
+
+      // 4. 抓取 DOM 元件
+      const mainTitle = document.getElementById('mainTitle');
+      const subTitle = document.getElementById('subTitle');
+      const drawBtn = document.getElementById('drawBtn');
+      const mapBtn = document.getElementById('mapBtn');
+      const imageWrapper = document.getElementById('imageWrapper');
+      const foodImage = document.getElementById('foodImage');
+      const historyList = document.getElementById('historyList');
+      const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+      const soundToggleBtn = document.getElementById('soundToggleBtn');
+
+      const menuModal = document.getElementById('menuModal');
+      const menuModalBtn = document.getElementById('menuModalBtn');
+      const closeModalBtn = document.getElementById('closeModalBtn');
+      const saveMenuBtn = document.getElementById('saveMenuBtn');
+      const resetMenuBtn = document.getElementById('resetMenuBtn');
+      const addFoodForm = document.getElementById('addFoodForm');
+      const foodNameInput = document.getElementById('foodNameInput');
+      const foodItemList = document.getElementById('foodItemList');
+
+      // 5. 抽籤邏輯與動畫
+      function startDraw() {
+        if (isDrawing) return;
+        if (foods.length === 0) {
+          alert("請先在菜單設定中新增至少一個美食選項！");
+          return;
+        }
+
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+
+        isDrawing = true;
+        drawBtn.disabled = true;
+        drawBtn.classList.add('opacity-75', 'cursor-not-allowed');
+
+        imageWrapper.classList.add('hidden');
+        mapBtn.classList.add('hidden');
+        subTitle.textContent = "美味搜尋中...";
+
+        let counter = 0;
+        const totalSteps = 25;
+        const speed = 70;
+
+        const timer = setInterval(() => {
+          const randomIndex = Math.floor(Math.random() * foods.length);
+          const currentItem = foods[randomIndex];
+
+          mainTitle.textContent = currentItem.name;
+          mainTitle.className = "text-3xl sm:text-4xl font-black text-amber-500 animate-slot";
+          playTickSound();
+
+          counter++;
+          if (counter >= totalSteps) {
+            clearInterval(timer);
+            finishDraw(currentItem);
+          }
+        }, speed);
+      }
+
+      function finishDraw(selected) {
+        isDrawing = false;
+        drawBtn.disabled = false;
+        drawBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+
+        mainTitle.textContent = selected.name;
+        mainTitle.className = "text-4xl sm:text-5xl font-black text-orange-600 animate-bounce-in tracking-wider";
+        subTitle.textContent = "太棒了！今天就決定吃這個：";
+
+        foodImage.src = selected.image || "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80";
+        imageWrapper.classList.remove('hidden');
+        imageWrapper.classList.add('animate-bounce-in');
+
+        mapBtn.href = selected.url || `https://www.google.com/maps/search/${encodeURIComponent(selected.name)}`;
+        mapBtn.classList.remove('hidden');
+
+        playSuccessSound();
+        triggerConfetti();
+        addHistory(selected.name);
+      }
+
+      function triggerConfetti() {
+        if (typeof confetti === 'function') {
+          confetti({
+            particleCount: 75,
+            spread: 60,
+            origin: { y: 0.7 },
+            colors: ['#F59E0B', '#10B981', '#EF4444', '#3B82F6', '#EC4899']
+          });
+        }
+      }
+
+      function addHistory(name) {
+        history.unshift(name);
+        if (history.length > 5) history.pop();
+        renderHistory();
+      }
+
+      function renderHistory() {
+        if (history.length === 0) {
+          historyList.innerHTML = `<span class="text-xs text-amber-700/50 italic px-2">尚無抽籤紀錄...</span>`;
+          clearHistoryBtn.classList.add('hidden');
+          return;
+        }
+
+        clearHistoryBtn.classList.remove('hidden');
+        historyList.innerHTML = history.map((item, index) => `
+          <span class="inline-block bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap shadow-sm border border-amber-200">
+            #${index + 1} ${item}
+          </span>
+        `).join('');
+      }
+
+      // 6. 菜單管理選單
+      function renderMenuList() {
+        foodItemList.innerHTML = foods.map((food, index) => `
+          <div class="flex items-center justify-between p-2.5 bg-amber-50 rounded-xl border border-amber-100 hover:border-amber-300 transition-colors">
+            <span class="font-bold text-amber-900 text-sm pl-1">${food.name}</span>
+            <button data-index="${index}" class="delete-btn text-red-400 hover:text-red-600 p-1 rounded-lg hover:bg-red-50 transition-colors" title="刪除">
+              <i class="fa-solid fa-trash-can text-sm"></i>
+            </button>
+          </div>
+        `).join('');
+
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = e.currentTarget.getAttribute('data-index');
+            deleteFood(idx);
+          });
+        });
+      }
+
+      function deleteFood(index) {
+        foods.splice(index, 1);
+        saveFoodsToStorage();
+        renderMenuList();
+      }
+
+      function saveFoodsToStorage() {
+        localStorage.setItem('my_custom_foods', JSON.stringify(foods));
+      }
+
+      // 7. 事件監聽
+      drawBtn.addEventListener('click', startDraw);
+
+      clearHistoryBtn.addEventListener('click', () => {
+        history = [];
+        renderHistory();
+      });
+
+      soundToggleBtn.addEventListener('click', () => {
+        soundEnabled = !soundEnabled;
+        soundToggleBtn.innerHTML = soundEnabled
+          ? `<i class="fa-solid fa-volume-high text-lg"></i>`
+          : `<i class="fa-solid fa-volume-xmark text-lg text-amber-400"></i>`;
+      });
+
+      menuModalBtn.addEventListener('click', () => {
+        renderMenuList();
+        menuModal.classList.remove('hidden');
+      });
+
+      closeModalBtn.addEventListener('click', () => menuModal.classList.add('hidden'));
+      saveMenuBtn.addEventListener('click', () => menuModal.classList.add('hidden'));
+
+      addFoodForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const newName = foodNameInput.value.trim();
+        if (newName) {
+          foods.push({
+            name: newName,
+            image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80",
+            url: `https://www.google.com/maps/search/${encodeURIComponent(newName)}`
+          });
+          saveFoodsToStorage();
+          renderMenuList();
+          foodNameInput.value = '';
+        }
+      });
+
+      resetMenuBtn.addEventListener('click', () => {
+        if (confirm("確定要恢復成預設菜單嗎？")) {
+          foods = [...DEFAULT_FOODS];
+          saveFoodsToStorage();
+          renderMenuList();
+        }
+      });
+
+      menuModal.addEventListener('click', (e) => {
+        if (e.target === menuModal) menuModal.classList.add('hidden');
+      });
+
+    });
+  </script>
+</body>
+</html>
