@@ -8,15 +8,14 @@
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Canvas Confetti CDN (慶祝彩帶效果) -->
+  <!-- Canvas Confetti CDN -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-  <!-- Google Fonts & FontAwesome 圖示庫 -->
+  <!-- Google Fonts & FontAwesome -->
   <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
-    /* 全局字體與可愛點點背景 */
     body {
       font-family: 'Zen Maru Gothic', sans-serif;
       background-color: #FFFBEB;
@@ -24,7 +23,6 @@
       background-size: 24px 24px;
     }
 
-    /* 關鍵影格動畫：彈跳登場 */
     @keyframes bounceIn {
       0% { opacity: 0; transform: scale(0.3) translateY(-50px); }
       50% { opacity: 1; transform: scale(1.1) translateY(10px); }
@@ -32,20 +30,17 @@
       100% { transform: scale(1) translateY(0); }
     }
 
-    /* 關鍵影格動畫：滾動轉盤效果 */
     @keyframes slotRoll {
       0% { transform: translateY(-20px); opacity: 0.5; }
       50% { transform: translateY(20px); opacity: 0.8; }
       100% { transform: translateY(0); opacity: 1; }
     }
 
-    /* 關鍵影格動畫：按鈕呼吸發光 */
     @keyframes pulseGlow {
       0%, 100% { box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.4), 0 8px 10px -6px rgba(245, 158, 11, 0.3); }
       50% { box-shadow: 0 20px 35px -5px rgba(245, 158, 11, 0.6), 0 12px 15px -6px rgba(245, 158, 11, 0.4); }
     }
 
-    /* 動態 Class 套用 */
     .animate-bounce-in {
       animation: bounceIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
     }
@@ -58,7 +53,6 @@
       animation: pulseGlow 2s infinite;
     }
 
-    /* 客製化滾動條 */
     ::-webkit-scrollbar {
       width: 6px;
     }
@@ -73,7 +67,7 @@
 </head>
 <body class="min-h-screen flex flex-col items-center justify-between p-4 sm:p-6 text-amber-900 selection:bg-amber-200">
 
-  <!-- 頂部標題與功能按鈕 -->
+  <!-- Header -->
   <header class="w-full max-w-md flex justify-between items-center mb-4">
     <div class="flex items-center gap-2">
       <span class="text-3xl">🍲</span>
@@ -89,10 +83,10 @@
     </div>
   </header>
 
-  <!-- 主卡片區域 -->
+  <!-- Main Card -->
   <main class="w-full max-w-md bg-white/90 backdrop-blur-md rounded-3xl p-6 sm:p-8 shadow-2xl border-4 border-amber-200 flex flex-col items-center text-center relative overflow-hidden my-auto">
 
-    <!-- 大標題區塊（抽籤後替換並播放彈跳動畫） -->
+    <!-- Title Container -->
     <div id="titleContainer" class="w-full min-h-[120px] flex flex-col justify-center items-center my-2">
       <h2 id="mainTitle" class="text-3xl sm:text-4xl font-black text-amber-600 tracking-wide transition-all duration-300">
         今天吃什麼？
@@ -102,7 +96,7 @@
       </p>
     </div>
 
-    <!-- 照片展示區 -->
+    <!-- Image Wrapper -->
     <div id="imageWrapper" class="hidden w-full my-4 relative group">
       <div class="w-full h-48 sm:h-56 rounded-2xl overflow-hidden border-4 border-amber-300 shadow-md bg-amber-50 relative">
         <img id="foodImage" src="" alt="美食照片" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
@@ -112,14 +106,13 @@
       </div>
     </div>
 
-    <!-- 操作按鈕區 -->
+    <!-- Buttons -->
     <div class="w-full flex flex-col items-center gap-3 mt-4">
       <button id="drawBtn" class="glow-button w-full py-4 px-8 bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white font-black text-xl sm:text-2xl rounded-2xl shadow-lg transform active:scale-95 transition-all duration-150 flex items-center justify-center gap-2">
         <i class="fa-solid fa-dice text-2xl"></i>
         <span>點我抽籤</span>
       </button>
 
-      <!-- Google Maps 導航按鈕 -->
       <a id="mapBtn" href="#" target="_blank" rel="noopener noreferrer" class="hidden w-full py-3.5 px-6 bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white font-bold text-lg rounded-2xl shadow-md transform active:scale-95 transition-all duration-150 flex items-center justify-center gap-2">
         <i class="fa-solid fa-location-dot"></i>
         <span>馬上出發 (Google Map)</span>
@@ -128,7 +121,7 @@
 
   </main>
 
-  <!-- 最近抽中紀錄 -->
+  <!-- History Section -->
   <section class="w-full max-w-md mt-6">
     <div class="flex justify-between items-center mb-2 px-2">
       <h3 class="text-xs font-bold text-amber-700/70 uppercase tracking-wider flex items-center gap-1">
@@ -141,12 +134,12 @@
     </div>
   </section>
 
-  <!-- 頁尾 -->
+  <!-- Footer -->
   <footer class="mt-6 text-center text-xs text-amber-700/60 font-medium">
     <p>做不了決定？就交給命運吧！✨</p>
   </footer>
 
-  <!-- 自訂菜單彈窗 (Modal) -->
+  <!-- Menu Modal -->
   <div id="menuModal" class="fixed inset-0 bg-amber-950/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl border-4 border-amber-300 max-h-[85vh] flex flex-col">
       <div class="flex justify-between items-center mb-4 pb-2 border-b-2 border-amber-100">
@@ -158,7 +151,6 @@
         </button>
       </div>
 
-      <!-- 新增菜單表單 -->
       <form id="addFoodForm" class="flex gap-2 mb-4">
         <input type="text" id="foodNameInput" placeholder="美食名稱 (如: 丹丹漢堡)" required class="flex-1 px-4 py-2 border-2 border-amber-200 rounded-xl focus:outline-none focus:border-amber-500 text-sm">
         <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-4 py-2 rounded-xl text-sm transition-colors">
@@ -166,7 +158,6 @@
         </button>
       </form>
 
-      <!-- 菜單列表 -->
       <div id="foodItemList" class="flex-1 overflow-y-auto space-y-2 pr-1 my-2"></div>
 
       <div class="mt-4 pt-3 border-t border-amber-100 flex justify-between items-center">
@@ -181,31 +172,31 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
 
-      // 1. 預設美食清單
+      // 1. 預設美食清單（已更新八戒越南咖啡照片連結）
       const DEFAULT_FOODS = [
         {
           name: "八戒越南咖啡",
-          image: "https://postimg.cc/hzqhrL7r",
+          image: "https://i.postimg.cc/hzqhrL7r/ba-jie-yue-nan-ka-fei.jpg",
           url: "https://shorturl.at/iVaXp"
         },
         {
           name: "樹科大奇積雞排（總店）",
-          image: "https://postimg.cc/HrqLYw3J",
+          image: "https://i.postimg.cc/LnLqKJ3V/shu-ke-da-qi-ji-ji-pai-zong-dian-2.png",
           url: "https://maps.app.goo.gl/Ph42FRzEjfBhK7UG9"
         },
         {
           name: "燕巢風味外省麵",
-          image: "https://postimg.cc/xJYTH9wQ",
+          image: "https://i.postimg.cc/MvVc2nm5/yan-chao-feng-wei-wai-sheng-mian-1.png",
           url: "https://maps.app.goo.gl/yUffWBPZQFP8Vig27"
         },
         {
           name: "芳師傅私房菜",
-          image: "https://postimg.cc/qhj03ycg",
+          image: "https://i.postimg.cc/HjfJhwXQ/fang-shi-fu-si-fang-cai5.webp",
           url: "https://maps.app.goo.gl/2rCUgXzBZFbaGEEh8"
         },
         {
           name: "阿丹鹹酥雞",
-          image: "https://postimg.cc/Q9xZhVLZ",
+          image: "https://i.postimg.cc/9zv4ndZn/a-dan-xian-su-ji-3.jpg",
           url: "https://maps.app.goo.gl/LQkaAxmpm7oucB7M8"
         }
       ];
@@ -216,7 +207,7 @@
       let isDrawing = false;
       let soundEnabled = true;
 
-      // 3. Web Audio API 音效生成
+      // 3. Web Audio API 音效
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
       function playTickSound() {
@@ -256,7 +247,7 @@
         } catch (e) {}
       }
 
-      // 4. 抓取 DOM 元件
+      // 4. DOM Elements
       const mainTitle = document.getElementById('mainTitle');
       const subTitle = document.getElementById('subTitle');
       const drawBtn = document.getElementById('drawBtn');
@@ -276,7 +267,7 @@
       const foodNameInput = document.getElementById('foodNameInput');
       const foodItemList = document.getElementById('foodItemList');
 
-      // 5. 抽籤邏輯與動畫
+      // 5. Draw logic
       function startDraw() {
         if (isDrawing) return;
         if (foods.length === 0) {
@@ -369,7 +360,7 @@
         `).join('');
       }
 
-      // 6. 菜單管理選單
+      // 6. Menu Management
       function renderMenuList() {
         foodItemList.innerHTML = foods.map((food, index) => `
           <div class="flex items-center justify-between p-2.5 bg-amber-50 rounded-xl border border-amber-100 hover:border-amber-300 transition-colors">
@@ -398,7 +389,7 @@
         localStorage.setItem('my_custom_foods', JSON.stringify(foods));
       }
 
-      // 7. 事件監聽
+      // 7. Event Listeners
       drawBtn.addEventListener('click', startDraw);
 
       clearHistoryBtn.addEventListener('click', () => {
