@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Thẻ quan trọng giúp khắc phục lỗi chặn nhúng ảnh từ PostImage -->
+  <meta name="referrer" content="no-referrer">
   <title>今天吃什麼？隨機抽籤機</title>
 
   <!-- Tailwind CSS CDN -->
@@ -172,10 +174,9 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
 
-      // Link ảnh dự phòng chung khi link chính không tải được
       const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80";
 
-      // 1. 預設美食清單
+      // 1. Danh sách 5 món ăn kèm link ảnh trực tiếp đã qua kiểm tra
       const DEFAULT_FOODS = [
         {
           name: "八戒越南咖啡",
@@ -204,8 +205,8 @@
         }
       ];
 
-      // Tự động khôi phục dữ liệu chuẩn nếu phát hiện LocalStorage cũ thiếu dữ liệu ảnh
-      let storedFoods = JSON.parse(localStorage.getItem('my_custom_foods_v2'));
+      // Đổi key LocalStorage để buộc trình duyệt làm mới dữ liệu ảnh chuẩn v3
+      let storedFoods = JSON.parse(localStorage.getItem('my_custom_foods_v3'));
       let foods = storedFoods || [...DEFAULT_FOODS];
 
       let history = [];
@@ -272,12 +273,11 @@
       const foodNameInput = document.getElementById('foodNameInput');
       const foodItemList = document.getElementById('foodItemList');
 
-      // Tự động thay thế bằng ảnh mặc định nếu ảnh bị lỗi tải
-      foodImage.onerror = function() {
+      // Tự động tải ảnh dự phòng nếu link chính gặp sự cố
+      foodImage.addEventListener('error', function() {
         this.src = FALLBACK_IMAGE;
-      };
+      });
 
-      // Draw logic
       function startDraw() {
         if (isDrawing) return;
         if (foods.length === 0) {
@@ -326,7 +326,6 @@
         mainTitle.className = "text-4xl sm:text-5xl font-black text-orange-600 animate-bounce-in tracking-wider";
         subTitle.textContent = "太棒了！今天就決定吃這個：";
 
-        // Gán ảnh
         foodImage.src = selected.image || FALLBACK_IMAGE;
         imageWrapper.classList.remove('hidden');
         imageWrapper.classList.add('animate-bounce-in');
@@ -371,7 +370,6 @@
         `).join('');
       }
 
-      // Menu Management
       function renderMenuList() {
         foodItemList.innerHTML = foods.map((food, index) => `
           <div class="flex items-center justify-between p-2.5 bg-amber-50 rounded-xl border border-amber-100 hover:border-amber-300 transition-colors">
@@ -397,10 +395,9 @@
       }
 
       function saveFoodsToStorage() {
-        localStorage.setItem('my_custom_foods_v2', JSON.stringify(foods));
+        localStorage.setItem('my_custom_foods_v3', JSON.stringify(foods));
       }
 
-      // Event Listeners
       drawBtn.addEventListener('click', startDraw);
 
       clearHistoryBtn.addEventListener('click', () => {
